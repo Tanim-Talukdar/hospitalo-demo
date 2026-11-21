@@ -1,26 +1,81 @@
+
 @import "tailwindcss";
 
 :root {
+  --primary: #1268b3;
+  --primary-dark: #0b4f91;
+  --secondary: #0d9488;
+  --foreground: #172b45;
+  --muted: #64748b;
   --background: #ffffff;
-  --foreground: #171717;
+  --surface: #f4f8fc;
+  --border: #e5edf5;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: #dbeafe;
+  color: var(--primary-dark);
+}
+
+.container-main {
+  width: min(1280px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+.section-padding {
+  padding-block: 88px;
+}
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary);
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  padding: 7px 13px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .container-main {
+    width: min(100% - 32px, 1280px);
+  }
+
+  .section-padding {
+    padding-block: 60px;
+  }
 }
