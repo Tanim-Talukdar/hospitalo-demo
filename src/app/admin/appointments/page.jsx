@@ -1,7 +1,5 @@
-
 "use client";
-
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FiCalendar,
   FiUsers,
@@ -12,19 +10,18 @@ import {
   FiX,
   FiPhone,
   FiUser,
-  FiChevronDown,
   FiArrowUpRight,
   FiAlertCircle,
 } from "react-icons/fi";
 
 const getLocalDate = () => {
   const date = new Date();
-  const offset = date.getTimezoneOffset();
-  return new Date(date.getTime() - offset * 60000)
-    .toISOString()
-    .split("T")[0];
-};
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
 
+  return `${year}-${month}-${day}`;
+};
 const initialPatients = [
   {
     id: "MC-2026-001",
@@ -119,7 +116,7 @@ const initialAppointments = [
     phone: "01712345678",
     doctor: "Dr. Sarah Ahmed",
     department: "Cardiology",
-    date: getLocalDate(),
+    date: "",
     time: "09:30",
     type: "Scheduled",
     complaint: "Chest discomfort and irregular heartbeat",
@@ -133,7 +130,7 @@ const initialAppointments = [
     phone: "01812345678",
     doctor: "Dr. Michael Rahman",
     department: "Neurology",
-    date: getLocalDate(),
+    date: "",
     time: "10:00",
     type: "Walk-in",
     complaint: "Frequent headaches",
@@ -147,7 +144,7 @@ const initialAppointments = [
     phone: "01912345678",
     doctor: "Dr. Emily Wilson",
     department: "Ophthalmology",
-    date: getLocalDate(),
+    date: "",
     time: "11:00",
     type: "Follow-up",
     complaint: "Follow-up eye examination",
@@ -168,7 +165,7 @@ const emptyForm = {
   complaint: "",
   department: "",
   doctorId: "",
-  date: getLocalDate(),
+  date: "", 
   time: "",
 };
 
@@ -226,15 +223,34 @@ export default function AppointmentsPage() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [dateFilter, setDateFilter] = useState(getLocalDate());
-
+  const [selectedDate, setSelectedDate] = useState("");
+  const [today, setToday] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [notice, setNotice] = useState("");
 
+  useEffect(() => {
+    const currentDate = getLocalDate();
+
+    setToday(currentDate);
+    setSelectedDate(currentDate);
+
+    setAppointments((previous) =>
+      previous.map((item) => ({
+        ...item,
+        date: item.date || currentDate,
+      }))
+    );
+
+    setForm((previous) => ({
+      ...previous,
+      date: currentDate,
+    }));
+  }, []);
+
   const todayAppointments = appointments.filter(
-    (item) => item.date === getLocalDate()
+    (item) => item.date === today
   );
 
   const stats = [
@@ -280,11 +296,11 @@ export default function AppointmentsPage() {
       const statusMatch =
         statusFilter === "All" || item.status === statusFilter;
 
-      const dateMatch = !dateFilter || item.date === dateFilter;
+      const dateMatch = !selectedDate || item.date === selectedDate;
 
       return searchMatch && statusMatch && dateMatch;
     });
-  }, [appointments, search, statusFilter, dateFilter]);
+  }, [appointments, search, statusFilter, selectedDate]);
 
   const matchingPatients = patients.filter((patient) => {
     const query = form.patientSearch.toLowerCase();
@@ -315,7 +331,10 @@ export default function AppointmentsPage() {
   }
 
   function openNewAppointment() {
-    setForm(emptyForm);
+    setForm({
+      ...emptyForm,
+      date: selectedDate || today,
+    });
     setNotice("");
     setModalOpen(true);
   }
@@ -436,7 +455,7 @@ export default function AppointmentsPage() {
     );
 
     setSelectedAppointment((previous) =>
-      previous ? { ...previous, status } : null
+      previous?.id === id ? { ...previous, status } : previous
     );
   }
 
@@ -511,8 +530,9 @@ export default function AppointmentsPage() {
 
               <input
                 type="date"
-                value={dateFilter}
-                onChange={(event) => setDateFilter(event.target.value)}
+                value={selectedDate}
+                onChange={(event) => setSelectedDate(event.target.value)}
+                aria-label="Filter appointments by date"
                 className={`${inputClass} sm:w-40`}
               />
             </div>
@@ -892,7 +912,7 @@ export default function AppointmentsPage() {
                   <Field label="Appointment Date" required>
                     <input
                       type="date"
-                      min={getLocalDate()}
+                      min={today || undefined}
                       value={form.date}
                       onChange={(event) =>
                         updateForm("date", event.target.value)
@@ -1124,8 +1144,9 @@ export default function AppointmentsPage() {
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                   disabled={
-                    selectedAppointment.status === "Completed" ||
-                    selectedAppointment.status === "Cancelled"
+                    ["Completed", "Cancelled", "No Show"].includes(
+                      selectedAppointment.status
+                    )
                   }
                   onClick={() =>
                     updateAppointmentStatus(
@@ -1140,8 +1161,9 @@ export default function AppointmentsPage() {
 
                 <button
                   disabled={
-                    selectedAppointment.status === "Completed" ||
-                    selectedAppointment.status === "Cancelled"
+                    ["Completed", "Cancelled", "No Show"].includes(
+                      selectedAppointment.status
+                    )
                   }
                   onClick={() =>
                     updateAppointmentStatus(
@@ -1156,8 +1178,9 @@ export default function AppointmentsPage() {
 
                 <button
                   disabled={
-                    selectedAppointment.status === "Completed" ||
-                    selectedAppointment.status === "Cancelled"
+                    ["Completed", "Cancelled", "No Show"].includes(
+                      selectedAppointment.status
+                    )
                   }
                   onClick={() =>
                     updateAppointmentStatus(
@@ -1172,8 +1195,9 @@ export default function AppointmentsPage() {
 
                 <button
                   disabled={
-                    selectedAppointment.status === "Completed" ||
-                    selectedAppointment.status === "Cancelled"
+                    ["Completed", "Cancelled", "No Show"].includes(
+                      selectedAppointment.status
+                    )
                   }
                   onClick={() =>
                     updateAppointmentStatus(

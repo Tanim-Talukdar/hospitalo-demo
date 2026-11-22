@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState,useEffect } from "react";
 import {
   FiActivity,
   FiAlertCircle,
@@ -510,7 +510,11 @@ export default function DoctorDashboardPage() {
   const [profileImage, setProfileImage] = useState("");
   const imageInputRef = useRef(null);
 
-  const today = todayDate();
+  const [today, setToday] = useState("");
+
+useEffect(() => {
+  setToday(todayDate());
+}, []);
 
   const todayAppointments = useMemo(
     () => appointments.filter((item) => item.date === today),
